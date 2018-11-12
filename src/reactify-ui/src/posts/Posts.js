@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import 'whatwg-fetch'
 import cookie from 'react-cookies'
 
+import PostInline from './PostInline'
+
 class Posts extends Component {
   loadPosts () {
     const endpoint = '/api/posts/'
@@ -13,13 +15,13 @@ class Posts extends Component {
     }
 
     fetch(endpoint, lookupOptions)
-    .then(function (response) {
-      return response.json()
-    }).then(function (responseData) {
-      console.log(responseData)
-    }).catch(function (error) {
-      console.log('error', error)
-    })
+      .then(function (response) {
+        return response.json()
+      }).then(function (responseData) {
+        console.log(responseData)
+      }).catch(function (error) {
+        console.log('error', error)
+      })
   }
 
   createPost () {
@@ -45,13 +47,13 @@ class Posts extends Component {
       }
 
       fetch(endpoint, lookupOptions)
-      .then(function (response) {
-        return response.json()
-      }).then(function (responseData) {
-        console.log(responseData)
-      }).catch(function (error) {
-        console.log('error', error)
-      })
+        .then(function (response) {
+          return response.json()
+        }).then(function (responseData) {
+          console.log(responseData)
+        }).catch(function (error) {
+          console.log('error', error)
+        })
     }
   }
 
@@ -61,7 +63,10 @@ class Posts extends Component {
 
   render () {
     return (
-      <h1>Hello World!</h1>
+      <div>
+        <h1>Hello World!</h1>
+        <PostInline title='A Title' />
+      </div>
     )
   }
 }
