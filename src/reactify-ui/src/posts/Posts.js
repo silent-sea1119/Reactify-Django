@@ -5,8 +5,13 @@ import cookie from 'react-cookies'
 import PostInline from './PostInline'
 
 class Posts extends Component {
+  state = {
+    posts: [],
+  }
+  
   loadPosts () {
     const endpoint = '/api/posts/'
+    let thisComponent = this
     let lookupOptions = {
       method: 'GET',
       headers: {
@@ -19,6 +24,11 @@ class Posts extends Component {
         return response.json()
       }).then(function (responseData) {
         console.log(responseData)
+        // here this !== thisComp
+        // thus we define 'this' outside this blog
+        thisComponent.setState({
+          posts: responseData
+        })
       }).catch(function (error) {
         console.log('error', error)
       })
@@ -58,14 +68,22 @@ class Posts extends Component {
   }
 
   componentDidMount () {
+    this.setState({ // this eliminates the need to define state at the beginning of the class
+      posts: []
+    })
     this.loadPosts()
   }
 
   render () {
+    const { posts } = this.state
     return (
       <div>
         <h1>Hello World!</h1>
-        <PostInline title='A Title' />
+        {posts.length > 0 ? posts.map((postItem, index) => {
+          return (
+            <PostInline post={postItem} />
+          )
+        }) : <p>No posts found.</p>}
       </div>
     )
   }
