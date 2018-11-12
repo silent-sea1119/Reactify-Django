@@ -5,8 +5,14 @@ import cookie from 'react-cookies'
 import PostInline from './PostInline'
 
 class Posts extends Component {
+  constructor (props) {
+    super(props)
+    this.togglePostListClass = this.togglePostListClass.bind(this)
+  }
+
   state = {
     posts: [],
+    postsListClass: 'card'
   }
   
   loadPosts () {
@@ -67,21 +73,38 @@ class Posts extends Component {
     }
   }
 
+  togglePostListClass (event) {
+    event.preventDefault()
+    const currentListClass = this.state.postsListClass
+    if (currentListClass === '') {
+      this.setState({
+        postsListClass: 'card'
+      })
+    } else {
+      this.setState({
+        postsListClass: ''
+      })
+    }
+  }
+
   componentDidMount () {
     this.setState({ // this eliminates the need to define state at the beginning of the class
-      posts: []
+      posts: [],
+      postsListClass: 'card'
     })
     this.loadPosts()
   }
 
   render () {
     const { posts } = this.state
+    const { postsListClass } = this.state
     return (
       <div>
         <h1>Hello World!</h1>
+        <button onClick={this.togglePostListClass}>Toggle class</button>
         {posts.length > 0 ? posts.map((postItem, index) => {
           return (
-            <PostInline post={postItem} />
+            <PostInline post={postItem} elementClass={postsListClass} />
           )
         }) : <p>No posts found.</p>}
       </div>
