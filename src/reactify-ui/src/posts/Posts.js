@@ -3,6 +3,7 @@ import 'whatwg-fetch'
 import cookie from 'react-cookies'
 
 import PostInline from './PostInline'
+import PostCreate from './PostCreate'
 
 class Posts extends Component {
   constructor (props) {
@@ -98,6 +99,7 @@ class Posts extends Component {
   render () {
     const { posts } = this.state
     const { postsListClass } = this.state
+    const csrfToken = cookie.load('csrftoken')
     return (
       <div>
         <h1>Hello World!</h1>
@@ -107,6 +109,11 @@ class Posts extends Component {
             <PostInline post={postItem} elementClass={postsListClass} />
           )
         }) : <p>No posts found.</p>}
+        {(csrfToken !== undefined && csrfToken !== null) ?
+          <div className='my-5'>
+            <PostCreate />
+          </div>
+        : ''}
       </div>
     )
   }
