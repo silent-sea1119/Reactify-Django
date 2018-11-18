@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import 'whatwg-fetch'
 import cookie from 'react-cookies'
+import moment from 'moment'
 
 class PostCreate extends Component {
   constructor (props) {
@@ -102,12 +103,22 @@ class PostCreate extends Component {
       draft: false,
       title: null,
       content: null,
-      publish: null
+      publish: moment(new Date()).format('YYYY-MM-DD')
+      // OR
+      // publish: moment().format('YYYY-MM-DD')
     })
     this.postTitleRef.current.focus()
   }
 
   render () {
+    const { publish } = this.state
+
+    // const publish = moment().format('YYYY-MM-DD')
+    // setting date this way will not allow the user to change the date manually in the form
+
+    // if the default values are not set initially in either constructor or componentDidMount but somewhere else
+    // then the app will throw errors
+
     return (
       <form onSubmit={this.handleSubmit} ref={(el) => this.postCreateForm = el}>
         <div className='form-group'>
@@ -146,6 +157,7 @@ class PostCreate extends Component {
             type='date'
             id='publish'
             name='publish'
+            value={publish}
             className='form-control'
             onChange={this.handleInputChange}
             required='required'
