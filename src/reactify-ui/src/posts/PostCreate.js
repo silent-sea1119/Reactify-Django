@@ -8,6 +8,7 @@ class PostCreate extends Component {
     super(props)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleInputChange = this.handleInputChange.bind(this)
+    this.handleDraftChange = this.handleDraftChange.bind(this)
     this.clearForm = this.clearForm.bind(this)
     this.clearFormRefs = this.clearFormRefs.bind(this)
     this.postTitleRef = React.createRef() // alternate way of creating reference
@@ -71,17 +72,10 @@ class PostCreate extends Component {
     })
   }
 
-  handleSubmit (event) {
-    event.preventDefault()
-    // console.log(this.state)
-    let data = this.state
-    if (data['draft'] === 'on') {
-      data['draft'] = true
-    } else {
-      data['draft'] = false
-    }
-    console.log(data)
-    this.createPost(data)
+  handleDraftChange (event) {
+    this.setState({
+      draft: !this.state.draft
+    })
   }
 
   clearForm (event) {
@@ -96,6 +90,17 @@ class PostCreate extends Component {
     // first create a ref for all the form elements
     // then set all those refs to an empty string
     this.postTitleRef.current = ''
+  }
+
+  handleSubmit (event) {
+    event.preventDefault()
+    let data = this.state
+    // if (data['draft'] === 'on') {
+    //   data['draft'] = true
+    // } else {
+    //   data['draft'] = false
+    // }
+    this.createPost(data)
   }
 
   componentDidMount () {
@@ -147,9 +152,12 @@ class PostCreate extends Component {
         </div>
         <div className='form-group'>
           <label for='draft'>
-            <input type='checkbox' id='draft' name='draft' className='mr-2' onChange={this.handleInputChange} />
+            <input type='checkbox' id='draft' name='draft' checked={this.state.draft} className='mr-2' onChange={this.handleDraftChange} />
             Draft
           </label>
+          {/* If we use value instead of checked in the input above then it won't allow any external element to
+              toggle the checkbox, like the button below is doing */}
+          <button onClick={(event) => { event.preventDefault(); this.handleDraftChange() }}>Toggle Draft</button>
         </div>
         <div className='form-group'>
           <label for='publish'>Publish Date</label>
