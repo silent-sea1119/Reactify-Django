@@ -9,13 +9,13 @@ class Posts extends Component {
   constructor (props) {
     super(props)
     this.togglePostListClass = this.togglePostListClass.bind(this)
+    this.handleNewPost = this.handleNewPost.bind(this)
+    this.state = {
+      posts: [],
+      postsListClass: 'card'
+    }
   }
 
-  state = {
-    posts: [],
-    postsListClass: 'card'
-  }
-  
   loadPosts () {
     const endpoint = '/api/posts/'
     let thisComponent = this
@@ -55,6 +55,15 @@ class Posts extends Component {
     }
   }
 
+  handleNewPost (postItemData) {
+    console.log(postItemData)
+    let currentPosts = this.state.posts
+    currentPosts.unshift(postItemData) // unshift prepends new data to the list
+    this.setState({
+      posts: currentPosts
+    })
+  }
+
   componentDidMount () {
     this.setState({ // this eliminates the need to define state at the beginning of the class
       posts: [],
@@ -78,9 +87,10 @@ class Posts extends Component {
         }) : <p>No posts found.</p>}
         {(csrfToken !== undefined && csrfToken !== null) ?
           <div className='my-5'>
-            <PostCreate />
+            <PostCreate newPostItemCreated={this.handleNewPost} />
           </div>
-        : ''}
+          : ''
+        }
       </div>
     )
   }

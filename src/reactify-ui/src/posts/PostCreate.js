@@ -18,6 +18,7 @@ class PostCreate extends Component {
   createPost (data) {
     const endpoint = '/api/posts/'
     const csrfToken = cookie.load('csrftoken')
+    let thisComp = this
 
     if (csrfToken !== undefined) {
       let lookupOptions = {
@@ -35,6 +36,9 @@ class PostCreate extends Component {
           return response.json()
         }).then(function (responseData) {
           console.log(responseData)
+          if (thisComp.props.newPostItemCreated) {
+            thisComp.props.newPostItemCreated(responseData)
+          }
         }).catch(function (error) {
           console.log('error', error)
           alert('An error occured. Please try again later.')
