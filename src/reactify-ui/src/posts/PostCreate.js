@@ -7,6 +7,9 @@ class PostCreate extends Component {
     super(props)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleInputChange = this.handleInputChange.bind(this)
+    this.clearForm = this.clearForm.bind(this)
+    this.clearFormRefs = this.clearFormRefs.bind(this)
+    this.postTitleRef = React.createRef() // alternate way of creating reference
     this.state = {
       draft: false,
       title: null,
@@ -39,24 +42,12 @@ class PostCreate extends Component {
           if (thisComp.props.newPostItemCreated) {
             thisComp.props.newPostItemCreated(responseData)
           }
+          thisComp.clearForm()
         }).catch(function (error) {
           console.log('error', error)
           alert('An error occured. Please try again later.')
         })
     }
-  }
-
-  handleSubmit (event) {
-    event.preventDefault()
-    // console.log(this.state)
-    let data = this.state
-    if (data['draft'] === 'on') {
-      data['draft'] = true
-    } else {
-      data['draft'] = false
-    }
-    console.log(data)
-    this.createPost(data)
   }
 
   handleInputChange (event) {
@@ -79,6 +70,33 @@ class PostCreate extends Component {
     })
   }
 
+  handleSubmit (event) {
+    event.preventDefault()
+    // console.log(this.state)
+    let data = this.state
+    if (data['draft'] === 'on') {
+      data['draft'] = true
+    } else {
+      data['draft'] = false
+    }
+    console.log(data)
+    this.createPost(data)
+  }
+
+  clearForm (event) {
+    if (event) {
+      event.preventDefault()
+    }
+    this.postCreateForm.reset() // this will not change the state
+  }
+
+  // alternate way of clearing out the form
+  clearFormRefs () {
+    // first create a ref for all the form elements
+    // then set all those refs to an empty string
+    this.postTitleRef.current = ''
+  }
+
   componentDidMount () {
     this.setState({
       draft: false,
@@ -86,21 +104,34 @@ class PostCreate extends Component {
       content: null,
       publish: null
     })
+    this.postTitleRef.current.focus()
   }
 
   render () {
     return (
-      <form onSubmit={this.handleSubmit}>
+      <form onSubmit={this.handleSubmit} ref={(el) => this.postCreateForm = el}>
         <div className='form-group'>
           <label for='title'>Post title</label>
           <input
-            type='text' id='title' name='title' className='form-control' placeholder='Blog post title' onChange={this.handleInputChange} required='required'
+            type='text'
+            id='title'
+            name='title'
+            className='form-control'
+            placeholder='Blog post title'
+            ref={this.postTitleRef}
+            onChange={this.handleInputChange}
+            required='required'
           />
         </div>
         <div className='form-group'>
           <label for='content'>Content</label>
           <textarea
-            id='content' name='content' className='form-control' placeholder='Post content' onChange={this.handleInputChange} required='required'
+            id='content'
+            name='content'
+            className='form-control'
+            placeholder='Post content'
+            onChange={this.handleInputChange}
+            required='required'
           />
         </div>
         <div className='form-group'>
@@ -111,9 +142,17 @@ class PostCreate extends Component {
         </div>
         <div className='form-group'>
           <label for='publish'>Publish Date</label>
-          <input type='date' id='publish' name='publish' className='form-control' onChange={this.handleInputChange} required='required' />
+          <input
+            type='date'
+            id='publish'
+            name='publish'
+            className='form-control'
+            onChange={this.handleInputChange}
+            required='required'
+          />
         </div>
         <button className='btn btn-primary'>Save</button>
+        <button className='btn btn-secondary ml-2' onClick={this.clearForm}>Cancel</button>
       </form>
     )
   }
