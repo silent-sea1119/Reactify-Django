@@ -22,12 +22,10 @@ class UserPublicSerializer(serializers.ModelSerializer):
     
 
 class PostSerializer(serializers.ModelSerializer):
-    url             = serializers.HyperlinkedIdentityField(
-                            view_name='posts-api:detail',
-                            lookup_field='slug'
-                            )
-    user            = UserPublicSerializer(read_only=True)
-    publish         = serializers.DateField(default=timezone.now())
+    url = serializers.HyperlinkedIdentityField(view_name='posts-api:detail', lookup_field='slug')
+    user = UserPublicSerializer(read_only=True)
+    publish = serializers.DateField(default=timezone.now())
+    owner = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = Post
@@ -39,6 +37,15 @@ class PostSerializer(serializers.ModelSerializer):
             'content',
             'draft',
             'publish',
+            'owner',
             'updated',
             'timestamp',
         ]
+    
+    def get_owner(self, obj):
+        print(self.context)
+        request = self.context['request']
+        if request.user.is_authenticated:
+            if obj.user == request.user:
+                return True
+        return False
