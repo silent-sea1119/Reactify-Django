@@ -10,14 +10,29 @@ class Posts extends Component {
     super(props)
     this.togglePostListClass = this.togglePostListClass.bind(this)
     this.handleNewPost = this.handleNewPost.bind(this)
+    this.loadMorePosts = this.loadMorePosts.bind(this)
     this.state = {
       posts: [],
-      postsListClass: 'card'
+      postsListClass: 'card',
+      next: null,
+      previous: null,
+      author: false,
+      count: 0
     }
   }
 
-  loadPosts () {
-    const endpoint = '/api/posts/'
+  loadMorePosts () {
+    const { next } = this.state
+    if (next !== null || next !== undefined) {
+      this.loadPosts(next)
+    }
+  }
+
+  loadPosts (nextEndpoint) {
+    let endpoint = '/api/posts/'
+    if (nextEndpoint !== undefined) {
+      endpoint = nextEndpoint
+    }
     let thisComponent = this
     let lookupOptions = {
       method: 'GET',
@@ -26,15 +41,25 @@ class Posts extends Component {
       }
     }
 
+    const csrfToken = cookie.load('csrftoken')
+    if (csrfToken !== undefined) {
+      lookupOptions['credentials'] = 'include'
+      lookupOptions['headers']['X-CSRFToken'] = csrfToken
+    }
+
     fetch(endpoint, lookupOptions)
       .then(function (response) {
         return response.json()
       }).then(function (responseData) {
         console.log(responseData)
-        // here this !== thisComp
-        // thus we define 'this' outside this blog
+        let currentPosts = thisComponent.state.posts // after loading more posts, we still want to see the older ones
+        let newPosts = currentPosts.concat(responseData.results)
         thisComponent.setState({
-          posts: responseData
+          posts: newPosts,
+          next: responseData.next,
+          previous: responseData.previous,
+          author: responseData.author,
+          count: responseData.count
         })
       }).catch(function (error) {
         console.log('error', error)
@@ -67,7 +92,11 @@ class Posts extends Component {
   componentDidMount () {
     this.setState({ // this eliminates the need to define state at the beginning of the class
       posts: [],
-      postsListClass: 'card'
+      postsListClass: 'card',
+      next: null,
+      previous: null,
+      author: false,
+      count: 0
     })
     this.loadPosts()
   }
@@ -75,20 +104,21 @@ class Posts extends Component {
   render () {
     const { posts } = this.state
     const { postsListClass } = this.state
-    const csrfToken = cookie.load('csrftoken')
+    const { author } = this.state
+    const { next } = this.state
     return (
       <div>
-        <h1>Hello World!</h1>
-        <Link maintainScrollPosition={false} to={{
+        {author === true ? <Link className='mr-2' maintainScrollPosition={false} to={{
           pathname: `/posts/create/`,
           state: { fromDashboard: false }
-        }}>Create Post</Link>
+        }}>Create Post</Link> : ''}
         <button onClick={this.togglePostListClass}>Toggle class</button>
         {posts.length > 0 ? posts.map((postItem, index) => {
           return (
             <PostInline post={postItem} elementClass={postsListClass} />
           )
         }) : <p>No posts found.</p>}
+        {next !== null ? <button onClick={this.loadMorePosts}>Load More</button> : ''}
       </div>
     )
   }
