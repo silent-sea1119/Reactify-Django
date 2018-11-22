@@ -3,13 +3,14 @@ import 'whatwg-fetch'
 import cookie from 'react-cookies'
 import moment from 'moment'
 
-class PostUpdate extends Component {
+class PostForm extends Component {
   constructor (props) {
     super(props)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleInputChange = this.handleInputChange.bind(this)
     this.handleDraftChange = this.handleDraftChange.bind(this)
     this.clearForm = this.clearForm.bind(this)
+    this.clearFormRefs = this.clearFormRefs.bind(this)
     this.postContentRef = React.createRef() // alternate way of creating reference
     this.state = {
       draft: false,
@@ -43,7 +44,6 @@ class PostUpdate extends Component {
           if (thisComp.props.newPostItemCreated) {
             thisComp.props.newPostItemCreated(responseData)
           }
-          thisComp.defaultState()
           thisComp.clearForm()
         }).catch(function (error) {
           console.log('error', error)
@@ -113,7 +113,11 @@ class PostUpdate extends Component {
     if (event) {
       event.preventDefault()
     }
-    this.postCreateForm.reset() // this will not change the state
+    this.postCreateForm.reset()
+    this.defaultState()
+  }
+
+  clearFormRefs () {
     this.postContentRef.current = ''
   }
 
@@ -156,7 +160,6 @@ class PostUpdate extends Component {
     const { publish } = this.state
     const { title } = this.state
     const { content } = this.state
-    const cancelButtonClass = this.props.post !== undefined ? 'd-none' : ''
 
     return (
       <form onSubmit={this.handleSubmit} ref={(el) => this.postCreateForm = el}>
@@ -217,12 +220,12 @@ class PostUpdate extends Component {
         <button className='btn btn-primary'>Save</button>
         {/* Show the clear button only if we are creating a new post */}
         <button
-          className={`btn btn-secondary ml-2 ${cancelButtonClass}`}
+          className='btn btn-secondary ml-2'
           onClick={this.clearForm}
-        >Cancel</button>
+        >Clear</button>
       </form>
     )
   }
 }
 
-export default PostUpdate
+export default PostForm

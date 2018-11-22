@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import 'whatwg-fetch'
 import cookie from 'react-cookies'
+import { Link } from 'react-router-dom'
 
 import PostInline from './PostInline'
-import PostUpdate from './PostUpdate'
 
 class Posts extends Component {
   constructor (props) {
@@ -79,18 +79,16 @@ class Posts extends Component {
     return (
       <div>
         <h1>Hello World!</h1>
+        <Link maintainScrollPosition={false} to={{
+          pathname: `/posts/create/`,
+          state: { fromDashboard: false }
+        }}>Create Post</Link>
         <button onClick={this.togglePostListClass}>Toggle class</button>
         {posts.length > 0 ? posts.map((postItem, index) => {
           return (
             <PostInline post={postItem} elementClass={postsListClass} />
           )
         }) : <p>No posts found.</p>}
-        {(csrfToken !== undefined && csrfToken !== null) ?
-          <div className='my-5'>
-            <PostUpdate newPostItemCreated={this.handleNewPost} />
-          </div>
-          : ''
-        }
       </div>
     )
   }
