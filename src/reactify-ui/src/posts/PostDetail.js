@@ -8,11 +8,18 @@ import PostUpdate from './PostUpdate'
 class PostDetail extends Component {
   constructor (props) {
     super(props)
+    this.handlePostItemUpdated = this.handlePostItemUpdated.bind(this)
     this.state = {
       slug: null,
       post: null,
       doneLoading: false
     }
+  }
+
+  handlePostItemUpdated (postItemData) {
+    this.setState({
+      post: postItemData
+    })
   }
 
   loadPost (slug) {
@@ -78,7 +85,7 @@ class PostDetail extends Component {
             pathname: `/posts`,
             state: { fromDashboard: false }
           }}>Posts</Link></p>
-          {post.owner === true ? <PostUpdate post={post} /> : ''}
+          {post.owner === true ? <PostUpdate post={post} postItemUpdated={this.handlePostItemUpdated} /> : ''}
         </div>}
       </div> : 'Loading...'}</p>
     )

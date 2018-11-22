@@ -10,13 +10,45 @@ class PostUpdate extends Component {
     this.handleInputChange = this.handleInputChange.bind(this)
     this.handleDraftChange = this.handleDraftChange.bind(this)
     this.clearForm = this.clearForm.bind(this)
-    this.clearFormRefs = this.clearFormRefs.bind(this)
-    this.postTitleRef = React.createRef() // alternate way of creating reference
+    this.postContentRef = React.createRef() // alternate way of creating reference
     this.state = {
       draft: false,
       title: null,
       content: null,
       publish: null
+    }
+  }
+
+  createPost (data) {
+    const endpoint = '/api/posts/'
+    const csrfToken = cookie.load('csrftoken')
+    let thisComp = this
+
+    if (csrfToken !== undefined) {
+      let lookupOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken // specified in django documentation
+        },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      }
+
+      fetch(endpoint, lookupOptions)
+        .then(function (response) {
+          return response.json()
+        }).then(function (responseData) {
+          console.log(responseData)
+          if (thisComp.props.newPostItemCreated) {
+            thisComp.props.newPostItemCreated(responseData)
+          }
+          thisComp.defaultState()
+          thisComp.clearForm()
+        }).catch(function (error) {
+          console.log('error', error)
+          alert('An error occured. Please try again later.')
+        })
     }
   }
 
@@ -41,11 +73,9 @@ class PostUpdate extends Component {
         .then(function (response) {
           return response.json()
         }).then(function (responseData) {
-          console.log(responseData)
-          if (thisComp.props.newPostItemCreated) {
-            thisComp.props.newPostItemCreated(responseData)
+          if (thisComp.props.postItemUpdated) {
+            thisComp.props.postItemUpdated(responseData)
           }
-          thisComp.clearForm()
         }).catch(function (error) {
           console.log('error', error)
           alert('An error occured. Please try again later.')
@@ -84,19 +114,28 @@ class PostUpdate extends Component {
       event.preventDefault()
     }
     this.postCreateForm.reset() // this will not change the state
-  }
-
-  // alternate way of clearing out the form
-  clearFormRefs () {
-    // first create a ref for all the form elements
-    // then set all those refs to an empty string
-    this.postTitleRef.current = ''
+    this.postContentRef.current = ''
   }
 
   handleSubmit (event) {
     event.preventDefault()
     let data = this.state
-    this.updatePost(data)
+
+    const { post } = this.props
+    if (post !== undefined) {
+      this.updatePost(data)
+    } else {
+      this.createPost(data)
+    }
+  }
+
+  defaultState () {
+    this.setState({
+      draft: false,
+      title: null,
+      content: null,
+      publish: moment(new Date()).format('YYYY-MM-DD')
+    })
   }
 
   componentDidMount () {
@@ -109,26 +148,15 @@ class PostUpdate extends Component {
         publish: moment(post.publish).format('YYYY-MM-DD')
       })
     } else {
-      this.setState({
-        draft: false,
-        title: null,
-        content: null,
-        publish: moment(new Date()).format('YYYY-MM-DD')
-      })
+      this.defaultState()
     }
-    this.postTitleRef.current.focus()
   }
 
   render () {
     const { publish } = this.state
     const { title } = this.state
     const { content } = this.state
-
-    // const publish = moment().format('YYYY-MM-DD')
-    // setting date this way will not allow the user to change the date manually in the form
-
-    // if the default values are not set initially in either constructor or componentDidMount but somewhere else
-    // then the app will throw errors
+    const cancelButtonClass = this.props.post !== undefined ? 'd-none' : ''
 
     return (
       <form onSubmit={this.handleSubmit} ref={(el) => this.postCreateForm = el}>
@@ -141,7 +169,6 @@ class PostUpdate extends Component {
             value={title}
             className='form-control'
             placeholder='Blog post title'
-            ref={this.postTitleRef}
             onChange={this.handleInputChange}
             required='required'
           />
@@ -154,13 +181,21 @@ class PostUpdate extends Component {
             value={content}
             className='form-control'
             placeholder='Post content'
+            ref={this.postContentRef}
             onChange={this.handleInputChange}
             required='required'
           />
         </div>
         <div className='form-group'>
           <label for='draft'>
-            <input type='checkbox' id='draft' name='draft' checked={this.state.draft} className='mr-2' onChange={this.handleDraftChange} />
+            <input
+              type='checkbox'
+              id='draft'
+              name='draft'
+              checked={this.state.draft}
+              className='mr-2'
+              onChange={this.handleDraftChange}
+            />
             Draft
           </label>
           {/* If we use value instead of checked in the input above then it won't allow any external element to
@@ -180,7 +215,11 @@ class PostUpdate extends Component {
           />
         </div>
         <button className='btn btn-primary'>Save</button>
-        <button className='btn btn-secondary ml-2' onClick={this.clearForm}>Cancel</button>
+        {/* Show the clear button only if we are creating a new post */}
+        <button
+          className={`btn btn-secondary ml-2 ${cancelButtonClass}`}
+          onClick={this.clearForm}
+        >Cancel</button>
       </form>
     )
   }
